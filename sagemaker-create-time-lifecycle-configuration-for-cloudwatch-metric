@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+NOTEBOOK_INSTANCE_NAME=$(jq '.ResourceName' /opt/ml/metadata/resource-metadata.json --raw-output)
+echo "Fetching the CloudWatch agent configuration file."
+#wget https://raw.githubusercontent.com/aws-samples/amazon-sagemaker-notebook-instance-lifecycle-config-samples/master/scripts/publish-instance-metrics/amazon-cloudwatch-agent.json
+wget https://raw.githubusercontent.com/amalbosemathew/sagemaker/main/cloudwatch-sagemaker-metrics.json
+#sed -i -- "s/MyNotebookInstance/$NOTEBOOK_INSTANCE_NAME/g" /root/amazon-cloudwatch-agent.json
+sed -i -- "s/MyNotebookInstance/$NOTEBOOK_INSTANCE_NAME/g" cloudwatch-sagemaker-metrics.json
+echo "Starting the CloudWatch agent on the Notebook Instance."
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a append-config -m ec2 -c file://$(pwd)/cloudwatch-sagemaker-metrics.json
+systemctl restart amazon-cloudwatch-agent.service
+#rm amazon-cloudwatch-agent.json
