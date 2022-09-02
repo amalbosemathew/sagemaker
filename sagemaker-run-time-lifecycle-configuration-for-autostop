@@ -1,0 +1,18 @@
+#!/bin/bash
+set -ex
+IDLE_TIME=420
+echo "Detecting Python install with boto3 install"
+if /usr/bin/python -c "import boto3" 2>/dev/null; then
+    PYTHON_DIR='/usr/bin/python'
+elif /usr/bin/python3 -c "import boto3" 2>/dev/null; then
+    PYTHON_DIR='/usr/bin/python3'
+else
+    # If no boto3 just quit because the script won't work
+    echo "No boto3 found in Python or Python3. Exiting..."
+    exit 1
+fi
+wget https://raw.githubusercontent.com/amalbosemathew/sagemaker/main/sagemaker-autostop.py
+mv sagemaker-autostop.py /root/autostop.py
+echo "Found boto3 at $PYTHON_DIR"
+echo "Starting the SageMaker autostop script in cron"
+(crontab -l 2>/dev/null; echo "*/5 * * * * $PYTHON_DIR /root/autostop.py --time $IDLE_TIME --ignore-connections >> /var/log/jupyter.log") | crontab -
