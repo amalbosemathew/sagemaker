@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 NOTEBOOK_INSTANCE_NAME=$(jq '.ResourceName' /opt/ml/metadata/resource-metadata.json --raw-output)
+hostnamectl set-hostname $NOTEBOOK_INSTANCE_NAME
 echo "Fetching the CloudWatch agent configuration file."
 wget https://raw.githubusercontent.com/amalbosemathew/sagemaker/main/cloudwatch-sagemaker-metrics.json
 sed -i -- "s/MyNotebookInstance/$NOTEBOOK_INSTANCE_NAME/g" cloudwatch-sagemaker-metrics.json
